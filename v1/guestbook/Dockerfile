@@ -1,37 +1,32 @@
-# Please choose from the below set of Docker commands to complete your Dockerfile:
+# Stage 1: Build the Go application
+FROM golang:1.20 AS build
 
-# COPY
-# RUN
-# ADD
-# EXPOSE
-# FROM
-# CMD
-# PUSH
-# PULL
-# WORKDIR
-
-
-FROM golang:1.18 as builder
-
+# Set the working directory inside the container
 WORKDIR /app
 
-COPY main.go .
+# Copy the source code
+COPY . .
 
-RUN go mod init guestbook
-RUN go mod tidy
+# Build the Go application
+RUN go build -o guestbook main.go
 
-RUN go build -o main main.go
+# Stage 2: Create a minimal image for running the application
+FROM alpine:latest
 
-FROM ubuntu:18.04
+# Set the working directory inside the container
+WORKDIR /root/
 
-<Please fill in the required Docker command> --from=builder /app/main /app/guestbook
+# Copy the built binary from the previous stage
+COPY --from=build /app/guestbook .
 
-<Please fill in the required Docker command> public/index.html /app/public/index.html
-<Please fill in the required Docker command> public/script.js /app/public/script.js
-<Please fill in the required Docker command> public/style.css /app/public/style.css
-<Please fill in the required Docker command> public/jquery.min.js /app/public/jquery.min.js
+# Set executable permissions
+RUN chmod +x guestbook
 
-WORKDIR /app
+# List files and permissions for debugging
+RUN ls -l
 
+# Expose the port the app runs on
+EXPOSE 8080
+
+# Run the Go application
 CMD ["./guestbook"]
-<Please fill in the required Docker command> 3000
